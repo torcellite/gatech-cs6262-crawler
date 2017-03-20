@@ -17,15 +17,11 @@ if (website.substr(0, 5) === 'https') {
 } else {
     directory = 'crawled_websites/' + website.substr(7);
 }
-
 // Create a directory for the website to be crawled
 fs.makeDirectory(directory);
 
 var errorJson = [];
-var resJson = {};
 var errorFile = directory + '/error.json';
-var resFile = directory + '/resources.json';
-
 // Log page errors in a JSON object
 var onError = function(msg, trace) {
     var error = {};
@@ -34,16 +30,25 @@ var onError = function(msg, trace) {
     errorJson.push(error);
 };
 
+var resJson = {};
+var resFile = directory + '/resources.json';
 // Log resource requests in a json object by url
 var onResourceRequested = function(request) {
     resJson[request['url']] = {};
     resJson[request['url']]['request'] = request;
 };
 
+var downloadsFolder = directory + '/downloads';
+var downloadRequestsFolder = directory + '/downloads/requests';
+// Create directories
+fs.makeDirectory(downloadsFolder);
+fs.makeDirectory(downloadRequestsFolder);
+
 var contentTypeWhitelist = ['application/json', 'application/javascript', 'application/x-javascript', 'application/font-woff'];
+// Empty whitelist for debugging purposes
+// var contentTypeWhitelist = [];
 // Log response to resource requests in the same json object by url
 var onResourceReceived = function(response) {
-    resJson[response['url']] = {};
     resJson[response['url']]['response'] = response;
 
     // Check if the file being requested is an application - possible malware
@@ -54,10 +59,18 @@ var onResourceReceived = function(response) {
                 malicious = false;
                 break;
             }
-        }    
+        }
         if (malicious) {
-            console.log(response['url'] + ' ' + response['contentType']);
-            console.log('Download link found');
+            var requestFile = downloadRequestsFolder + '/request-' + Date.now() + '.txt';
+            var headers = resJson[response['url']]['request']['headers'];
+            var requestFileContent = resJson[response['url']]['request']['method'] + '\n';
+            requestFileContent += response['url'] + '\n';
+
+            for (var idx = 0; idx < headers.length; idx++) {
+                requestFileContent += headers[idx]['name'] + ': ' + headers[idx]['value'] + '\n';
+            }
+            fs.write(requestFile, requestFileContent, 'w');
+            console.log('Created request to download ' + response['url'] + ' of content-type ' + response['contentType']);
         }
     }
 };
@@ -75,12 +88,11 @@ var onLoadFinished  = function() {
 
 // Logic for when pop ups are opened
 var onPageCreated = function(newPage) {
-    console.log('New page created');
-    console.log(newPage.url);
+    console.log('New page created: ' +  newPage.url);
 };
 
 var onNavigationRequested = function(url, type, willNavigate, main) {
-    console.log('Trying to navigate to: ' + url + ' from: ' + page.url);
+//    console.log('Trying to navigate to: ' + url + ' from: ' + page.url);
 //    console.log('Caused by: ' + type);
 //    console.log('Will actually navigate: ' + willNavigate);
 //    console.log('Sent from the page\'s main frame: ' + main);
@@ -93,8 +105,8 @@ var clickPage = function(x, y) {
 //        console.log('x: ' + x + ' y: ' + y);
         clicksCompleted++;
         page.sendEvent('click', x, y);
-        page.render('image' + clicksCompleted + '.png');
-        // Minus 2 to account for grid sizes that are not factors of the viewport dimensions
+//        page.render('image' + clicksCompleted + '.png');
+        // Subtract 2 to account for grid sizes that are not factors of the viewport dimensions
         if (clicksCompleted >= (pageWidth * pageHeight / (gridSize * gridSize)) - 2) {
             finish();
         }
