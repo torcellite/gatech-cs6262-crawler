@@ -1,15 +1,14 @@
 #!/bin/bash
 
 # $1 - URL
-FOLDER_NAME='crawled_websites/'`echo $1 | rev | cut -d/ -f1 | rev`'/downloads/requests'
-
-# Create folders
-mkdir -p $FOLDER_NAME
+FOLDER_NAME='crawled_websites'
 
 # Start request file watcher
-inotifywait -m $FOLDER_NAME -e create -e moved_to |
+inotifywait -r -m $FOLDER_NAME -e create -e moved_to |
     while read path action file; do
-        bash download.sh $FOLDER_NAME/$file &
+      if [[ $file == *"request-"* ]]; then
+        bash download.sh $path$file &
+      fi
     done &
 
 # Start crawler
