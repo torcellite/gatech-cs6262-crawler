@@ -1,10 +1,12 @@
 #!/bin/bash
 
 # $1 - URL
-FOLDER_NAME='crawled_websites'
+# $2 - Root directory
+
+mkdir $2
 
 # Start request file watcher
-inotifywait -r -m $FOLDER_NAME -e create -e moved_to |
+inotifywait -r -m $2 -e create -e moved_to |
     while read path action file; do
       if [[ $file == *"request-"* ]]; then
         bash download.sh $path$file &
@@ -12,7 +14,7 @@ inotifywait -r -m $FOLDER_NAME -e create -e moved_to |
     done &
 
 # Start crawler
-phantomjs crawler.js $1
+phantomjs crawler.js $1 $2
 
 # Kill request file watcher
 ps aux | grep inotifywait | awk '{print $2}' > pid

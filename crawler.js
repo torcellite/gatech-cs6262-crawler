@@ -17,14 +17,7 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   var pageHeight = page.viewportSize.height;
 
   var website = url;
-  var directory = 'crawled_websites/';
-  if (website.substr(0, 5) === 'https') {
-    directory = 'crawled_websites/' + website.substr(8) + '_' +
-      numOfActivePopups;
-  } else {
-    directory = 'crawled_websites/' + website.substr(7) + '_' +
-      numOfActivePopups;
-  }
+  var directory = rootDirectory + '/' + url.split('/')[2] + '_' + numOfActivePopups;
   // Create a directory for the website to be crawled
   fs.makeDirectory(directory);
 
@@ -168,6 +161,7 @@ var fs = require('fs');
 var system = require('system');
 
 var url = system.args[1];
+var rootDirectory = system.args[2];
 var numOfActivePopups = 0;
 var startTime = Date.now();
 var finishCallback = function() {
