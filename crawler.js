@@ -17,8 +17,14 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   var pageHeight = page.viewportSize.height;
 
   var website = url;
-  var directory = rootDirectory + '/' + url.split('/')[2] + '_' +
-    numOfActivePopups;
+  var directory;
+  if (url.split('/').length > 1) {
+    directory = rootDirectory + '/' + url.split('/')[2] + '_' +
+      numOfActivePopups;
+  } else {
+    directory = rootDirectory + '/' + url + '_' +
+      numOfActivePopups;
+  }
   // Create a directory for the website to be crawled
   fs.makeDirectory(directory);
 
@@ -104,6 +110,7 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   // Logic for when pop ups are opened
   var onPageCreated = function(newPage) {
     if (DEBUG) console.log('New page created');
+    ++featureNumOfPopups;
     ++numOfActivePopups;
     maliciousPageCrawler(newPage, website, finishCallback);
   };
@@ -170,6 +177,9 @@ var errorJsonArray = [];
 var resFileArray = [];
 var resJsonArray = [];
 
+// Feature variables
+var featureNumOfPopups = 0;
+
 // This callback is called by the different invocations of maliciousPageCrawler
 // as soon as errorFile, errorJson, resFile, resJson references are created
 var dumpCallback = function(errorFile, errorJson, resFile, resJson) {
@@ -192,7 +202,10 @@ var finishCallback = function() {
 };
 
 var terminate = function() {
-  // Dump error and resposne JSONs
+  // Features
+  var featureOutput = featureNumOfPopups;
+  console.log(featureOutput)
+    // Dump error and resposne JSONs
   for (var idx = 0; idx < errorFileArray.length; idx++) {
     fs.write(errorFileArray[idx], JSON.stringify(errorJsonArray[idx], 4, null),
       'w');
