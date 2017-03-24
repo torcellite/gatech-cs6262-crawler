@@ -129,6 +129,10 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
     if (DEBUG) console.log('Sent from the page\'s main frame: ' + main);
   };
 
+  var onAlert = function(msg) {
+    if (DEBUG) console.log('Alert msg: ' + msg);
+  }
+
   var gridSize = 250;
   var clicksCompleted = 0;
   var clickPage = function(x, y) {
@@ -154,7 +158,26 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   page.onLoadFinished = onLoadFinished;
   page.onPageCreated = onPageCreated;
   page.onNavigationRequested = onNavigationRequested;
+  page.onAlert = onAlert;
   dumpCallback(errorFile, errorJson, resFile, resJson);
+
+  setTimeout(function() {
+    // Confirm all popup-dialogs
+    // Code borrowed from http://stackoverflow.com/a/34047131/1154689
+    page.evaluate(function() {
+      window.alert = function(msg) {
+        window.callPhantom({
+          alert: msg
+        }); // will call page.onCallback()
+        return true; // will "close the alert"
+      };
+    });
+    // re-bind to onAlert()
+    page.onCallback = function(obj) {
+      page.onAlert(obj.alert); // will trigger page.onAlert()
+      if (DEBUG) console.log('Alert dialog dismissed');
+    };
+  }, 2000);
 
   // Open the page, if it's the root page
   if (popupPage === null) {
