@@ -18,12 +18,14 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
 
   var website = url;
   var directory;
+  // Check to ensure URL contains http/https
   if (url.split('/').length > 1) {
-    directory = rootDirectory + '/' + url.split('/')[2] + '_' +
+      directory = rootDirectory + '/' + url.split('/')[2] + '_' +
       numOfActivePopups;
   } else {
-    directory = rootDirectory + '/' + url + '_' +
+      directory = rootDirectory + '/' + url + '_' +
       numOfActivePopups;
+      website = 'http://' + url;
   }
   // Create a directory for the website to be crawled
   fs.makeDirectory(directory);

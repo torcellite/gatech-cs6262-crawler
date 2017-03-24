@@ -3,7 +3,7 @@
 # $1 - URL
 # $2 - Root directory
 
-mkdir $2
+mkdir -p $2
 
 # Start request file watcher
 inotifywait -r -m $2 -e create -e moved_to |
