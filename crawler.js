@@ -17,7 +17,8 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   var pageHeight = page.viewportSize.height;
 
   var website = url;
-  var directory = rootDirectory + '/' + url.split('/')[2] + '_' + numOfActivePopups;
+  var directory = rootDirectory + '/' + url.split('/')[2] + '_' +
+    numOfActivePopups;
   // Create a directory for the website to be crawled
   fs.makeDirectory(directory);
 
@@ -98,8 +99,6 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
         clickPage(x, y);
       }
     }
-    fs.write(errorFile, JSON.stringify(errorJson, 4, null), 'w');
-    fs.write(resFile, JSON.stringify(resJson, 4, null), 'w');
   };
 
   // Logic for when pop ups are opened
@@ -142,6 +141,7 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   page.onLoadFinished = onLoadFinished;
   page.onPageCreated = onPageCreated;
   page.onNavigationRequested = onNavigationRequested;
+  dumpCallback(errorFile, errorJson, resFile, resJson);
 
   // Open the page, if it's the root page
   if (popupPage === null) {
@@ -164,6 +164,22 @@ var url = system.args[1];
 var rootDirectory = system.args[2];
 var numOfActivePopups = 0;
 var startTime = Date.now();
+
+var errorFileArray = [];
+var errorJsonArray = [];
+var resFileArray = [];
+var resJsonArray = [];
+
+// This callback is called by the different invocations of maliciousPageCrawler
+// as soon as errorFile, errorJson, resFile, resJson references are created
+var dumpCallback = function(errorFile, errorJson, resFile, resJson) {
+    errorFileArray.push(errorFile);
+    errorJsonArray.push(errorJson);
+    resFileArray.push(resFile);
+    resJsonArray.push(resJson);
+  }
+  // This callback is called by the different invocations of maliciousPageCrawler
+  // as soon as they're done crawling the page
 var finishCallback = function() {
   --numOfActivePopups;
   // If there are no active popups, stop the crawler
@@ -171,9 +187,21 @@ var finishCallback = function() {
     var time = Date.now() - startTime;
     console.log('Time taken to crawl ' + url + ': ' + time +
       ' ms');
-    phantom.exit();
+    terminate();
   }
 };
+
+var terminate = function() {
+  // Dump error and resposne JSONs
+  for (var idx = 0; idx < errorFileArray.length; idx++) {
+    fs.write(errorFileArray[idx], JSON.stringify(errorJsonArray[idx], 4, null),
+      'w');
+    fs.write(resFileArray[idx], JSON.stringify(resJsonArray[idx], 4, null),
+      'w');
+  }
+  // Kill the crawler
+  phantom.exit();
+}
 
 console.log('Beginning to crawl ' + url);
 maliciousPageCrawler(null, url, finishCallback);
@@ -181,5 +209,5 @@ maliciousPageCrawler(null, url, finishCallback);
 // 60 second timeout for the crawler
 setTimeout(function() {
   console.log('Crawler is taking too long, aborting..');
-  phantom.exit();
+  terminate();
 }, 60000);
