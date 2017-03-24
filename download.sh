@@ -4,8 +4,9 @@
 METHOD=`head -n 1 $1`
 URL=`head -n 2 $1 | tail -n 1`
 HEADERS=`tail -n +3 $1`
-DOWNLOAD_FOLDER=`echo $1 | cut -d/ -f1-3`
-DOWNLOAD_FILE=`echo $URL | rev | cut -d/ -f1 | rev`
+DOWNLOAD_FOLDER=`echo $1 | awk -F'requests' '{print $1}'`
 
-curl -X $METHOD -H "$HEADERS" -o $DOWNLOAD_FOLDER/$DOWNLOAD_FILE  $URL > /dev/null 2>&1
-echo 'Downloaded '$DOWNLOAD_FILE' based on '$1
+# Navigate into the download folder and download the file
+cd $DOWNLOAD_FOLDER
+curl -X $METHOD -H "$HEADERS" -O -J $URL > /dev/null 2>&1
+echo 'Downloaded file from '$1

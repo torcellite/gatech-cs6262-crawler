@@ -19,13 +19,13 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   var website = url;
   var directory;
   // Check to ensure URL contains http/https
-  if (url.split('/').length > 1) {
-      directory = rootDirectory + '/' + url.split('/')[2] + '_' +
+  if (url.substr(0, 7) === 'http://' || url.substr(0, 8) === 'https://') {
+    directory = rootDirectory + '/' + url.split('/')[2] + '_' +
       numOfActivePopups;
   } else {
-      directory = rootDirectory + '/' + url + '_' +
+    directory = rootDirectory + '/' + url + '_' +
       numOfActivePopups;
-      website = 'http://' + url;
+    website = 'http://' + url;
   }
   // Create a directory for the website to be crawled
   fs.makeDirectory(directory);
@@ -55,7 +55,11 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   fs.makeDirectory(downloadRequestsFolder);
 
   var contentTypeWhitelist = ['application/json', 'application/javascript',
-    'application/x-javascript', 'application/font-woff'
+    'application/x-javascript', 'application/font-woff',
+    'application/x-font-ttf',
+    'application/x-font-opentype', 'application/x-font-truetype',
+    'application/font-woff', 'application/font-woff2',
+    'application/vnd.ms-fontobject', 'application/vnd.ms-fontobject'
   ];
   // Empty whitelist for debugging purposes
   // var contentTypeWhitelist = [];
