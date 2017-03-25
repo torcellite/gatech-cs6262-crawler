@@ -270,7 +270,7 @@ var terminate = function() {
     ',' + featureSizeOfNonWhitelistedResourcesReceived + ',' +
     featureAvgSizeOfNonWhitelistedResourcesReceived;
   fs.write(rootDirectory + '/stats.csv', featureOutput, 'w');
-  console.log(featureOutput);
+  if (DEBUG) console.log(featureOutput);
   // Dump error and resposne JSONs
   for (var idx = 0; idx < errorFileArray.length; idx++) {
     fs.write(errorFileArray[idx], JSON.stringify(errorJsonArray[idx], 4, null),
