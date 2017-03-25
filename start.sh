@@ -11,7 +11,7 @@ inotifywait -r -m $2 -e create -e moved_to |
       if [[ $file == *"request-"* ]]; then
         bash download.sh $path$file &
       fi
-      #Start collecting DNS data
+      # Start collecting DNS data
       if [[ $file == "resources.json" ]]; then
         python get_dns.py $path &
       fi
