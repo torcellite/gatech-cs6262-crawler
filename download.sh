@@ -8,5 +8,5 @@ DOWNLOAD_FOLDER=`echo $1 | awk -F'requests' '{print $1}'`
 
 # Navigate into the download folder and download the file
 cd $DOWNLOAD_FOLDER
+echo 'Downloading file based on '$1
 curl -X $METHOD -H "$HEADERS" -O -J $URL > /dev/null 2>&1
-echo 'Downloaded file from '$1

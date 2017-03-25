@@ -44,6 +44,7 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   var resFile = directory + '/resources.json';
   // Log resource requests in a json object by url
   var onResourceRequested = function(request) {
+    ++featureNumOfResourcesRequested;
     resJson[request['url']] = {};
     resJson[request['url']]['request'] = request;
   };
@@ -65,6 +66,9 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
   // var contentTypeWhitelist = [];
   // Log response to resource requests in the same json object by url
   var onResourceReceived = function(response) {
+    ++featureNumOfResourcesReceived;
+    if (response.bodySize !== undefined)
+      featureSizeOfResourcesReceived += response.bodySize;
     resJson[response['url']]['response'] = response;
 
     // Check if the file being requested is an application - possible malware
@@ -78,6 +82,9 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
         }
       }
       if (malicious) {
+        ++featureNumOfNonWhitelistedResourcesReceived;
+        if (response.bodySize !== undefined)
+          featureSizeOfNonWhitelistedResourcesReceived += response.bodySize;
         var requestFile = downloadRequestsFolder + '/request-' + Date.now() +
           '.txt';
         var headers = resJson[response['url']]['request']['headers'];
@@ -99,11 +106,15 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
     }
   };
 
+  var loadStartTime;
   var onLoadStarted = function() {
+    loadStartTime = Date.now();
     if (DEBUG) console.log('Loading the new page');
   };
 
   var onLoadFinished = function() {
+    ++numPagesLoaded;
+    featureTotalLoadTime += (Date.now() - loadStartTime);
     page.render(directory + '_screenshot.png');
     // Create click grid
     for (var x = gridSize / 2; x < pageWidth; x += gridSize) {
@@ -174,7 +185,8 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
     });
     // re-bind to onAlert()
     page.onCallback = function(obj) {
-      page.onAlert(obj.alert); // will trigger page.onAlert()
+      // page.onAlert(obj.alert); // will trigger page.onAlert()
+      ++featureNumOfAlerts;
       if (DEBUG) console.log('Alert dialog dismissed');
     };
   }, 2000);
@@ -208,17 +220,29 @@ var resJsonArray = [];
 
 // Feature variables
 var featureNumOfPopups = 0;
+var featureNumOfAlerts = 0;
+var featureTotalLoadTime = 0;
+var featureAvgLoadTime = 0;
+var featureNumOfResourcesRequested = 0;
+var featureNumOfResourcesReceived = 0;
+var featureNumOfNonWhitelistedResourcesReceived = 0;
+var featureSizeOfResourcesReceived = 0;
+var featureAvgSizeOfResourcesReceived = 0;
+var featureSizeOfNonWhitelistedResourcesReceived = 0;
+var featureAvgSizeOfNonWhitelistedResourcesReceived = 0;
+var numPagesLoaded = 0; // Needed to find the average load time
 
 // This callback is called by the different invocations of maliciousPageCrawler
 // as soon as errorFile, errorJson, resFile, resJson references are created
 var dumpCallback = function(errorFile, errorJson, resFile, resJson) {
-    errorFileArray.push(errorFile);
-    errorJsonArray.push(errorJson);
-    resFileArray.push(resFile);
-    resJsonArray.push(resJson);
-  }
-  // This callback is called by the different invocations of maliciousPageCrawler
-  // as soon as they're done crawling the page
+  errorFileArray.push(errorFile);
+  errorJsonArray.push(errorJson);
+  resFileArray.push(resFile);
+  resJsonArray.push(resJson);
+};
+
+// This callback is called by the different invocations of maliciousPageCrawler
+// as soon as they're done crawling the page
 var finishCallback = function() {
   --numOfActivePopups;
   // If there are no active popups, stop the crawler
@@ -232,9 +256,22 @@ var finishCallback = function() {
 
 var terminate = function() {
   // Features
-  var featureOutput = featureNumOfPopups;
-  console.log(featureOutput)
-    // Dump error and resposne JSONs
+  featureAvgLoadTime = featureTotalLoadTime / numPagesLoaded;
+  featureAvgSizeOfResourcesReceived = featureSizeOfResourcesReceived /
+    featureNumOfResourcesReceived;
+  featureAvgSizeOfNonWhitelistedResourcesReceived =
+    featureSizeOfNonWhitelistedResourcesReceived /
+    featureNumOfNonWhitelistedResourcesReceived;
+  var featureOutput = featureNumOfPopups + ',' + featureNumOfAlerts + ',' +
+    featureTotalLoadTime + ',' + featureAvgLoadTime + ',' +
+    featureNumOfResourcesRequested + ',' + featureNumOfResourcesReceived +
+    ',' + featureNumOfNonWhitelistedResourcesReceived + ',' +
+    featureSizeOfResourcesReceived + ',' + featureAvgSizeOfResourcesReceived +
+    ',' + featureSizeOfNonWhitelistedResourcesReceived + ',' +
+    featureAvgSizeOfNonWhitelistedResourcesReceived;
+  fs.write(rootDirectory + '/stats.csv', featureOutput, 'w');
+  console.log(featureOutput);
+  // Dump error and resposne JSONs
   for (var idx = 0; idx < errorFileArray.length; idx++) {
     fs.write(errorFileArray[idx], JSON.stringify(errorJsonArray[idx], 4, null),
       'w');
@@ -243,7 +280,7 @@ var terminate = function() {
   }
   // Kill the crawler
   phantom.exit();
-}
+};
 
 console.log('Beginning to crawl ' + url);
 maliciousPageCrawler(null, url, finishCallback);
