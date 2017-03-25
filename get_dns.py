@@ -49,6 +49,7 @@ def resolveDns(url):
                     dns_record['asn_country_code'] = results['asn_country_code']
             finally:
                 #Collect the SOA records
+                soa_record = []
                 try:
                     soa_record = resolver.query(domain_name, "SOA")
                 except:
