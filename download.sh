@@ -13,3 +13,4 @@ echo 'Downloading file based on '$1
 curl -X $METHOD -H "$HEADERS" -O -J $URL > /dev/null 2>&1 &&
 DOWNLOADED_FILE=`ls -1t | head -n 1`
 python $CWD/virustotal_verify.py $DOWNLOADED_FILE
+python $CWD/collect_maliciousurl_data.py $URL $DOWNLOAD_FOLDER
