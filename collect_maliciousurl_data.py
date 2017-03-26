@@ -13,6 +13,7 @@ def get_malicious_data(url, download_folder):
             if url in row['url']:
                 with open('stats.csv', 'a') as stats_file:
                     writer = csv.writer(stats_file)
+                    writer.writerow([])
                     writer.writerow((row['url'], row['ip_address'], row['asn'], row['asn_country_code'],
                     row['soa_serial'], row['soa_mname'], row['soa_rname'], row['soa_refresh'],
                     row['soa_retry'], row['soa_expire'], row['soa_minimum']))
@@ -22,7 +23,8 @@ def get_malicious_data(url, download_folder):
 if __name__ == "__main__":
     url = sys.argv[1]
     download_folder = sys.argv[2]
+    downloaded_file = sys.argv[3]
     os.chdir('./../..')
-    vt_file = 'virus_total'
+    vt_file = 'virus_total' + downloaded_file.split('.',1)[0]
     if os.path.isfile(vt_file):
         get_malicious_data(url, download_folder)

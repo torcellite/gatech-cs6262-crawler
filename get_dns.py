@@ -12,7 +12,6 @@ from ipwhois.net import Net
 from ipwhois.asn import IPASN
 from urlparse import urlparse
 import tldextract
-from pprint import pprint
 
 contentTypeWhitelist = ['application/json',
                         'application/javascript',
@@ -20,7 +19,7 @@ contentTypeWhitelist = ['application/json',
                         'application/font-woff',
                         'image', 'font', 'css']
 
-ips_visited = []
+urls_visited = []
 
 def resolveDns(url):
     #print "Resolving domain for url: ", url
@@ -34,7 +33,7 @@ def resolveDns(url):
                 dns_ans = resolver.query(domain_name, 'A', raise_on_no_answer=False)
                 #Store DNS record only for the first IP address to avoid redundant data
                 r = dns_ans[0]
-                if str(r) in ips_visited:
+                if str(r) in urls_visited:
                     return None
                 else:
                     #obj = IPWhois(str(r))
@@ -43,7 +42,7 @@ def resolveDns(url):
                     net = Net(r)
                     obj = IPASN(net)
                     results = obj.lookup()
-                    ips_visited.append(str(r))
+                    urls_visited.append(url)
                     dns_record['ip_address'] = str(r)
                     dns_record['asn'] = results['asn']
                     dns_record['asn_country_code'] = results['asn_country_code']
