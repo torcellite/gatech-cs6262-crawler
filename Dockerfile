@@ -7,12 +7,13 @@ RUN apt-get update && apt-get install -y wget curl python python-pip python-dev 
 RUN pip install dnspython ipaddr ipwhois tldextract virustotal
 RUN easy_install hashlib
 
-# Copy the crawler
+# Create working directory
 RUN mkdir crawler
 WORKDIR crawler
-COPY crawler.js get_dns.py download.sh start.sh stop.sh collect_maliciousdata.sh collect_maliciousurl_data.py virustotal_verify.py phantomjs-2.1.1-linux-x86_64.tar.bz2 ./
 
 # Install Phantomjs
+# Copy phantomjs
+COPY phantomjs-2.1.1-linux_x86_64.tar.bz2 ./
 # Extract phantomjs
 RUN tar xvf phantomjs-2.1.1-linux-x86_64.tar.bz2
 # Rename extracted folder
@@ -21,3 +22,6 @@ RUN mv phantomjs-2.1.1-linux-x86_64 phantomjs
 RUN rm phantomjs-2.1.1-linux-x86_64.tar.bz2
 # Export phantomjs to path
 ENV PATH "$PATH:/crawler/phantomjs/bin"
+
+# Copy the crawler
+COPY crawler.js get_dns.py download.sh start.sh stop.sh collect_maliciousdata.sh collect_maliciousurl_data.py virustotal_verify.py ./

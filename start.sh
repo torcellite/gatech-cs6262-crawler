@@ -20,6 +20,10 @@ inotifywait -r -m $2 -e create -e moved_to |
 # Start crawler
 phantomjs crawler.js $1 $2
 
+# Wait a bit before killing inotifywait,
+# so that get_dns.py is fired when resources.json is created
+sleep 5;
+
 # Kill request file watcher
 ps aux | grep inotifywait | awk '{print $2}' > pid
 while read -r PID; do
