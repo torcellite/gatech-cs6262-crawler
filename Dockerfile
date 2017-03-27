@@ -13,7 +13,7 @@ WORKDIR crawler
 
 # Install Phantomjs
 # Copy phantomjs
-COPY phantomjs-2.1.1-linux_x86_64.tar.bz2 ./
+COPY phantomjs-2.1.1-linux-x86_64.tar.bz2 ./
 # Extract phantomjs
 RUN tar xvf phantomjs-2.1.1-linux-x86_64.tar.bz2
 # Rename extracted folder
