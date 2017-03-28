@@ -8,9 +8,11 @@ if __name__=="__main__":
     url = sys.argv[2]
     download_folder = sys.argv[3]
     dns_id = (download_folder.split('/')[-3]).split('_')[-1]
-    tmp_dumpurl = "./../../" + 'tmp_dumpurl_' + dns_id
-    print tmp_dumpurl
+    download_folder = os.path.abspath('./')
+    os.chdir("./../../")
+    tmp_dumpurl = 'tmp_dumpurl_' + dns_id
+    path = os.path.abspath('./')
     with open(tmp_dumpurl, 'a+') as tmp:
-        tmp_record = dns_id + ' ' + url + ' ' + filename
+        tmp_record = dns_id + ' ' + url + ' ' + path + ' ' + download_folder + ' ' + filename
         tmp.write(tmp_record)
         tmp.write('\n')
