@@ -12,8 +12,8 @@ RUN mkdir crawler
 WORKDIR crawler
 
 # Install Phantomjs
-# Copy phantomjs
-COPY phantomjs-2.1.1-linux-x86_64.tar.bz2 ./
+# Download phantomjs
+RUN wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2
 # Extract phantomjs
 RUN tar xvf phantomjs-2.1.1-linux-x86_64.tar.bz2
 # Rename extracted folder
@@ -24,4 +24,4 @@ RUN rm phantomjs-2.1.1-linux-x86_64.tar.bz2
 ENV PATH "$PATH:/crawler/phantomjs/bin"
 
 # Copy the crawler
-COPY crawler.js get_dns.py download.sh start.sh stop.sh collect_maliciousdata.sh collect_maliciousurl_data.py virustotal_verify.py ./
+COPY . ./
