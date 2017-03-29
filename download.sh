@@ -12,4 +12,4 @@ cd $DOWNLOAD_FOLDER
 echo 'Downloading file based on '$1
 curl -X $METHOD -H "$HEADERS" -O -J $URL > /dev/null 2>&1 &&
 DOWNLOADED_FILE=`ls -1t | head -n 1`
-python $CWD/virustotal_verify.py $DOWNLOADED_FILE $URL $DOWNLOAD_FOLDER
+python $CWD/dump_downloadurl.py $DOWNLOADED_FILE $URL $DOWNLOAD_FOLDER
