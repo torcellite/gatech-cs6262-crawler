@@ -21,16 +21,13 @@ stats_reader = csv.reader(stat_file)
 out_file = open("sample.csv", "w")
 stats_out = stats_reader.next()
 
-#writing stats data to output file
 out_writer = csv.writer(out_file)
-out_writer.writerow(stats_out)
 
-#writing dns data into output file
+#writing stats+dns data into output file
 for file in dns_files:
     dns_file = open(file)
     dns_reader = csv.reader(dns_file)
     ignore = dns_reader.next()
     for row in dns_reader:
-        out_writer.writerow(row)
-    out_writer.writerow(['###'])
+        out_writer.writerow(stats_out+row)
 out_file.close()
