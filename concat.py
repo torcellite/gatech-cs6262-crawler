@@ -1,33 +1,37 @@
 import csv
 import os
-from os import listdir,system
+from os import listdir
 from os.path import isfile, join
-import sys
 
-#getting list of dns record files
+#getting list of crawled websites
 mypath = os.getcwd()
-files = [f for f in listdir(mypath) if isfile(join(mypath, f))]
-dns_files = []
-for file in files:
-    if "dns_record_" in file:
-        dns_files.append(file)
-dns_files = sorted(dns_files)
+dirs = next(os.walk("crawled_websites"))[1]
+
+for dir in dirs:
+    path = "crawled_websites/"+dir
+    files = [f for f in listdir(path) if isfile(join(path, f))]
+    if "sample.csv" not in files:
+        dns_files = []
+        for file in files:
+            if "dns_record_" in file:
+                dns_files.append(file)
+        dns_files = sorted(dns_files)
 
 #open stats.csv
-stat_file = open("stats.csv")
-stats_reader = csv.reader(stat_file)
-
+        if "stats.csv" in files and dns_files:
+            stat_file = open(path+"/stats.csv")
+            stats_reader = csv.reader(stat_file)
+            stats_out = stats_reader.next()
+            stat_file.close()
 #create output file
-out_file = open("sample.csv", "w")
-stats_out = stats_reader.next()
-
-out_writer = csv.writer(out_file)
+            out_file = open(path+"/sample.csv", "w")
+            out_writer = csv.writer(out_file)
 
 #writing stats+dns data into output file
-for file in dns_files:
-    dns_file = open(file)
-    dns_reader = csv.reader(dns_file)
-    ignore = dns_reader.next()
-    for row in dns_reader:
-        out_writer.writerow(stats_out+row)
-out_file.close()
+            for file in dns_files:
+                dns_file = open(path+"/"+file)
+                dns_reader = csv.reader(dns_file)
+                ignore = dns_reader.next()
+                for row in dns_reader:
+                    out_writer.writerow(stats_out+row)
+            out_file.close()
