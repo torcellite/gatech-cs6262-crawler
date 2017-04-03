@@ -15,5 +15,5 @@ while IFS= read -r line; do
     bash start.sh $website crawled_websites/$DATE/$1/$website
     end_time=`date +%s`
     time_taken=$((end_time-start_time))
-    echo "Crawled "$website" from "$1" in "$time_taken" seconds" >> log
+    echo "Crawled "$website" from "$1" in "$time_taken" seconds"
 done < $1
