@@ -6,9 +6,10 @@ touch stop_crawling
 poll=1
 while [[ $poll -eq 1 ]]; do
     if [[ `ps aux | grep "run_crawler.sh" | wc -l` -eq 1 ]]; then
-	$poll=0
+	poll=0
+    else
+	sleep 10;
     fi
-    sleep 10;
 done
 
 # Kill all the crawlers (run_crawler.sh and any straggling start.sh, crawler.js processes)
