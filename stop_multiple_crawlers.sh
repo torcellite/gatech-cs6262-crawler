@@ -3,12 +3,17 @@
 # Stop run_crawler.sh instances
 touch stop_crawling
 
+timeout=200
 poll=1
 while [[ $poll -eq 1 ]]; do
     if [[ `ps aux | grep "run_crawler.sh" | wc -l` -eq 1 ]]; then
 	poll=0
     else
 	sleep 10;
+	timeout=$((timeout-10));
+  	if [[ $timeout -eq 0 ]]; then
+	    poll=0
+	fi
     fi
 done
 
