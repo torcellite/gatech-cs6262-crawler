@@ -8,6 +8,10 @@ fi
 DATE=`date +"%m-%d-%y"`
 
 while IFS= read -r line; do
+    # Check flag to continue
+    if [[ -f stop_crawling ]]; then
+	exit 2;
+    fi
     # Strip new line character
     website=`echo "$line"`
     echo "Crawling "$website
