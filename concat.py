@@ -1,14 +1,15 @@
 import csv
 import os
+import sys
 from os import listdir
 from os.path import isfile, join
 
 #getting list of crawled websites
-mypath = os.getcwd()
-dirs = next(os.walk("crawled_websites"))[1]
+dir_path = "crawled_websites/"+sys.argv[1]+"/"
+dirs = next(os.walk(dir_path))[1]
 
 for dir in dirs:
-    path = "crawled_websites/"+dir
+    path = dir_path+dir
     files = [f for f in listdir(path) if isfile(join(path, f))]
     if "sample.csv" not in files:
         dns_files = []
