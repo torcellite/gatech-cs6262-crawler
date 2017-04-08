@@ -5,7 +5,7 @@ from os import listdir
 from os.path import isfile, join
 
 #getting list of crawled websites
-dir_path = "crawled_websites/"+sys.argv[1]+"/"
+dir_path = "crawled_websites/"+sys.argv[1]+"/"+"crawl_lists/"
 base_dirs = next(os.walk(dir_path))[1]
 dirs = []
 for base_dir in base_dirs:
