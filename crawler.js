@@ -116,11 +116,22 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
     ++numPagesLoaded;
     featureTotalLoadTime += (Date.now() - loadStartTime);
     page.render(directory + '_screenshot.png');
-    // Create click grid
-    for (var x = gridSize / 2; x < pageWidth; x += gridSize) {
-      for (var y = gridSize / 2; y < pageHeight; y += gridSize) {
+    var bodyRects = page.evaluate(function (){
+        var bodyElems = document.getElementsByTagName("body")[0].getElementsByTagName("*");
+        var rects = [];
+        for (var i=0; i < bodyElems.length; i++) {
+            rects.push(bodyElems[i].getBoundingClientRect());
+        }
+        return rects;
+    }
+    )
+    //console.log("BodyRects obtained with length", bodyRects.length, JSON.stringify(bodyRects[0]));
+    for (var i = 0; i < bodyRects.length; i++) {
+        var rect = bodyRects[i];
+        var x = rect.left + (rect.right - rect.left)/2;
+        var y = rect.top + (rect.bottom - rect.top)/2;
+        //console.log("Clicking ", x, ",", y);
         clickPage(x, y);
-      }
     }
   };
 
