@@ -17,6 +17,12 @@ def verify_file(path, filename):
     filesize = os.path.getsize(file_toverify)
     v = virustotal.VirusTotal(API_KEY)
     print "Scanning file ", file_toverify
+    #time.sleep(20)
+    start_time = time.time()
+    current_time = start_time
+    #using sleep() does not always work; if a signal is caught it terminates sleep()
+    while(current_time < (float(start_time)+20)):
+        current_time = time.time()
     if filesize < MAX_UPLOAD_SIZE:
         report = v.scan(file_toverify)
     else:
@@ -53,30 +59,41 @@ def get_malicious_data(url, dns_id, path):
 
 if __name__ == "__main__":
     filename = sys.argv[1]
+    scan_count = 0
     with open(filename, 'r+') as tmp_file:
-        line = tmp_file.readline()
-        l = line.split(' ')
-        dns_id = l[0]
-        url = l[1]
-        path = l[2]
-        download_filepath = l[3]
-        download_file = l[4].strip('\n')
+        for line in tmp_file:
+            #line = tmp_file.readline()
+            l = line.split(' ')
+            dns_id = l[0]
+            url = l[1]
+            path = l[2]
+            download_filepath = l[3]
+            download_file = l[4].strip('\n')
 
-        vt_verify_flag = 1
-        #Do not scan the file if it is a font file
-        for ext in font_file_ext:
-            if ext in download_file:
-                vt_verify_flag = 0
+            vt_verify_flag = 1
+            #Do not scan the file if it is a font file
+            for ext in font_file_ext:
+                if ext in download_file:
+                    vt_verify_flag = 0
 
-        if vt_verify_flag==1:
-            vt_report = verify_file(download_filepath, download_file)
-            if not vt_report['positives']==0:
-                get_malicious_data(url, dns_id, path)
-                #final virus total result
-                record = str(vt_report['positives']) + '/' + str(vt_report['total']) +'\n'
-                #file containing VT result if found malicious
-                vt_filepath = path + '/virus_total_' + dns_id + "_" + download_file.rsplit('.', 1)[0]
-                with open(vt_filepath, 'w+b') as vt_file:
-                    vt_file.write(record)
-                vt_file.close()
-                time.sleep(20)
+            if vt_verify_flag==1:
+                scan_count += 1
+                if scan_count%4 == 0:
+                    #time.sleep(30)
+                    start_time = time.time()
+                    current_time = start_time
+                    #using sleep() does not always work; if a signal is caught it terminates sleep()
+                    while(current_time < (float(start_time)+30)):
+                        current_time = time.time()
+
+                vt_report = verify_file(download_filepath, download_file)
+                if not vt_report['positives']==0:
+                    get_malicious_data(url, dns_id, path)
+                    #final virus total result
+                    record = str(vt_report['positives']) + '/' + str(vt_report['total']) +'\n'
+                    #file containing VT result if found malicious
+                    vt_filepath = path + '/virus_total_' + dns_id + "_" + download_file.rsplit('.', 1)[0]
+                    with open(vt_filepath, 'w+b') as vt_file:
+                        vt_file.write(record)
+                    vt_file.close()
+                #time.sleep(20)

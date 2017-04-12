@@ -25,7 +25,7 @@ phantomjs crawler.js $1 $2
 sleep 5;
 
 # Kill request file watcher
-ps aux | grep inotifywait | awk '{print $2}' > pid
+ps aux | grep "inotifywait -r -m $2" | awk '{print $2}' > pid
 while read -r PID; do
     kill -9 $PID
 done < pid
