@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Stop run_crawler.sh instances
+# Stop run_crawler.sh instances gracefully (i.e. wait until the website currently
+# being crawled is completely crawled)
 touch stop_crawling
 
 timeout=200

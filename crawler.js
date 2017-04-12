@@ -82,6 +82,8 @@ var maliciousPageCrawler = function(popupPage, url, finishCallback) {
         }
       }
       if (malicious) {
+        // Stash the request headers for the resource for the cURL process
+        // to emulate the same conditions and download the resource
         ++featureNumOfNonWhitelistedResourcesReceived;
         if (response.bodySize !== undefined)
           featureSizeOfNonWhitelistedResourcesReceived += response.bodySize;

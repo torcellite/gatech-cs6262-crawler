@@ -1,5 +1,9 @@
 #!/bin/bash
 
+##
+# Script to run the crawler on each domain in a list of domains
+##
+
 if [[ $# -ne 1 ]]; then
     echo "Usage is bash run_crawler.sh website_list";
     exit 1;
@@ -8,9 +12,9 @@ fi
 DATE=`date +"%m-%d-%y"`
 
 while IFS= read -r line; do
-    # Check flag to continue
+    # Check flag to continue, this allows for a graceful way to stop the crawler
     if [[ -f stop_crawling ]]; then
-	exit 2;
+	      exit 2;
     fi
     # Strip new line character
     website=`echo "$line"`

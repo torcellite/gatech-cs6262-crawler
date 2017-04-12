@@ -1,5 +1,10 @@
 #!/bin/bash
 
+##
+# Script to download the resource requested by the webpage with the same
+# request headers
+##
+
 # $1 - Request file name
 METHOD=`head -n 1 $1`
 URL=`head -n 2 $1 | tail -n 1`
