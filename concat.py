@@ -22,7 +22,7 @@ for dir in dirs:
 
 #get rank of the url
         ranking_files = [f for f in listdir(rank_dir) if isfile(join(rank_dir, f))]
-        rank = "Nan"
+        rank = "?"
         if target_rank_file in ranking_files:
 	    rank_file = open(rank_dir + target_rank_file)
             rank_reader = csv.reader(rank_file)
@@ -31,11 +31,17 @@ for dir in dirs:
                      rank = line[0]
                      break
 
-#get list of dns_files
+#get list of dns_files and virustotal_files
         dns_files = []
+        virustotal_files = []
+        vt_dnsid_list = []
         for file in files:
             if "dns_record_" in file:
                 dns_files.append(file)
+            if "virus_total_" in file:
+                virustotal_files.append(file)
+                id = '_' + file.split("_")[2] + "."
+                vt_dnsid_list.append(id)
         dns_files = sorted(dns_files)
 
 #open stats.csv
@@ -52,10 +58,45 @@ for dir in dirs:
 
 #writing stats+dns data into output file
             for file in dns_files:
+                vt_flag = False
+                #check if there is a downloaded file that was found malicious by VT
+                malicious_url_list = []
+                vt_score_list = []
+                count = 0
+                for id in vt_dnsid_list:
+                    if id in file:
+                        vt_flag = True
+                        tmp_filename = dir + "/tmp_dumpurl" + id.rstrip('.')
+                        with open(tmp_filename, 'r+') as tmp_file:
+                            for line in tmp_file:
+                                l = line.split(' ')
+                                malicious_url_list.append(l[1])
+                                vt_filename = dir +  '/virus_total' + id.rstrip('.') + "_" + (l[4].strip('\n')).rsplit('.', 1)[0]
+                                with open(vt_filename, 'r+') as vt_file:
+                                    vt_score = vt_file.readline()
+                                    vt_score = vt_score.strip('\n')
+                                    vt_score_list.append(vt_score)
+                                vt_file.close()
+                        tmp_file.close()
+                        break
                 dns_file = open(dir+"/"+file)
                 dns_reader = csv.reader(dns_file)
                 ignore = dns_reader.next()
                 for row in dns_reader:
-                    out_writer.writerow(stats_out+row)
+                    vt_stats = []
+                    if vt_flag:
+                        vt_stats.append('1')
+                        if row[0] in malicious_url_list:
+                            idx = malicious_url_list.index(row[0])
+                            vt_stats.append('1')
+                            vt_stats.append(vt_score_list[idx])
+                        else:
+                            vt_stats.append('0')
+                            vt_stats.append('?')
+                    else:
+                        vt_stats.append('0')
+                        vt_stats.append('0')
+                        vt_stats.append('?')
+                    out_writer.writerow(stats_out+row+vt_stats)
                 dns_file.close()
             out_file.close()

@@ -30,7 +30,7 @@ def resolveDns(url):
         if domain_name:
             resolver = dns.resolver.Resolver()
             try:
-                dns_ans = resolver.query(domain_name, 'A', raise_on_no_answer=False)
+                dns_ans = resolver.query(domain_name, 'A')
                 #Store DNS record only for the first IP address to avoid redundant data
                 r = dns_ans[0]
                 if str(r) in urls_visited:
@@ -65,7 +65,7 @@ def resolveDns(url):
                 ext = tldextract.extract(url)
                 domain = ext.domain + '.' + ext.suffix
                 try:
-                    soa_record = resolver.query(domain, "SOA", raise_on_no_answer=False)
+                    soa_record = resolver.query(domain, "SOA")
                     for s in soa_record:
                         dns_record['soa_serial'] = s.serial
                         dns_record['soa_mname'] = s.mname
