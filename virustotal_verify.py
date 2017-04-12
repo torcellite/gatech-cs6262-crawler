@@ -21,7 +21,7 @@ def verify_file(path, filename):
     start_time = time.time()
     current_time = start_time
     #using sleep() does not always work; if a signal is caught it terminates sleep()
-    while(current_time < (float(start_time)+30)):
+    while(current_time < (float(start_time)+20)):
         current_time = time.time()
     if filesize < MAX_UPLOAD_SIZE:
         report = v.scan(file_toverify)

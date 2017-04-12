@@ -42,6 +42,7 @@ for dir in dirs:
                 virustotal_files.append(file)
                 id = '_' + file.split("_")[2] + "."
                 vt_dnsid_list.append(id)
+                vt_record_exists = True
         dns_files = sorted(dns_files)
 
 #open stats.csv
@@ -61,7 +62,6 @@ for dir in dirs:
                 vt_flag = False
                 #check if there is a downloaded file that was found malicious by VT
                 malicious_url_list = []
-                vt_score_list = []
                 count = 0
                 for id in vt_dnsid_list:
                     if id in file:
@@ -71,12 +71,6 @@ for dir in dirs:
                             for line in tmp_file:
                                 l = line.split(' ')
                                 malicious_url_list.append(l[1])
-                                vt_filename = dir +  '/virus_total' + id.rstrip('.') + "_" + (l[4].strip('\n')).rsplit('.', 1)[0]
-                                with open(vt_filename, 'r+') as vt_file:
-                                    vt_score = vt_file.readline()
-                                    vt_score = vt_score.strip('\n')
-                                    vt_score_list.append(vt_score)
-                                vt_file.close()
                         tmp_file.close()
                         break
                 dns_file = open(dir+"/"+file)
@@ -84,19 +78,19 @@ for dir in dirs:
                 ignore = dns_reader.next()
                 for row in dns_reader:
                     vt_stats = []
-                    if vt_flag:
+                    if vt_flag and vt_record_exists:
                         vt_stats.append('1')
                         if row[0] in malicious_url_list:
-                            idx = malicious_url_list.index(row[0])
                             vt_stats.append('1')
-                            vt_stats.append(vt_score_list[idx])
                         else:
                             vt_stats.append('0')
-                            vt_stats.append('?')
+                    elif vt_record_exists:
+                        vt_stats.append('1')
+                        vt_stats.append('0')
                     else:
                         vt_stats.append('0')
                         vt_stats.append('0')
-                        vt_stats.append('?')
+
                     out_writer.writerow(stats_out+row+vt_stats)
                 dns_file.close()
             out_file.close()
