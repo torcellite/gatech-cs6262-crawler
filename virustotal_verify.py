@@ -17,7 +17,7 @@ def verify_file(path, filename):
     filesize = os.path.getsize(file_toverify)
     v = virustotal.VirusTotal(API_KEY)
     print "Scanning file ", file_toverify
-    if os.path.isfile(file_toverify):
+    if not os.path.isdir(file_toverify):
         #time.sleep(20)
         start_time = time.time()
         current_time = start_time
@@ -37,6 +37,8 @@ def verify_file(path, filename):
         vt_report['total'] = report.total
         vt_report['positives'] = report.positives
         return vt_report
+    else:
+        return None
 
 
 def get_malicious_data(url, dns_id, path):
@@ -79,7 +81,7 @@ if __name__ == "__main__":
 
             if vt_verify_flag==1:
                 vt_report = verify_file(download_filepath, download_file)
-                if not vt_report['positives']==0:
+                if vt_report and not vt_report['positives']==0:
                     get_malicious_data(url, dns_id, path)
                     #final virus total result
                     record = str(vt_report['positives']) + '/' + str(vt_report['total']) +'\n'
