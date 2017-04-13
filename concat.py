@@ -1,3 +1,6 @@
+# Pyhton script to collect all the classifier features from various urls crawled on a single day 
+# and accumulate it into one file which will be used by our classifier
+
 import csv
 import os
 import sys
@@ -9,18 +12,24 @@ dir_path = "crawled_websites/"+sys.argv[1]+"/crawl_lists/"
 base_dirs = next(os.walk(dir_path))[1]
 rank_dir = '../alexa-processor/csv/'
 target_rank_file = sys.argv[1] + "-top-1m-urls.csv"
+feature_file_name = "../classifier_features/" + sys.argv[1] + "_features.csv"
 dirs = []
 for base_dir in base_dirs:
     web_dirs = next(os.walk(dir_path+base_dir))[1]
     for dir in web_dirs:
         dirs.append(dir_path+base_dir+"/"+dir)
 
+#create the cumulative file of features for the entire day
+feature_file = open(feature_file_name, "w")
+feature_writer = csv.writer(feature_file)
+
+#traversing through every url that was crawled on that perticular day
 for dir in dirs:
     files = [f for f in listdir(dir) if isfile(join(dir, f))]
     if "sample.csv" not in files:
         url = dir.split("/")[-1]
 
-#get rank of the url
+#get alexa rank of the url
         ranking_files = [f for f in listdir(rank_dir) if isfile(join(rank_dir, f))]
         rank = "?"
         if target_rank_file in ranking_files:
@@ -35,6 +44,7 @@ for dir in dirs:
         dns_files = []
         virustotal_files = []
         vt_dnsid_list = []
+        vt_record_exists = False
         for file in files:
             if "dns_record_" in file:
                 dns_files.append(file)
@@ -49,8 +59,6 @@ for dir in dirs:
         if "stats.csv" in files and dns_files:
             stat_file = open(dir+"/stats.csv")
             stats_reader = csv.reader(stat_file)
-            stat_file = open(path+"/stats.csv")
-            stats_reader = csv.reader(stat_file)
             stats_out = stats_reader.next()
             stat_file.close()
 #create output file
@@ -60,7 +68,7 @@ for dir in dirs:
 #writing stats+dns data into output file
             for file in dns_files:
                 vt_flag = False
-                #check if there is a downloaded file that was found malicious by VT
+#check if there is a downloaded file that was found malicious by VT
                 malicious_url_list = []
                 count = 0
                 for id in vt_dnsid_list:
@@ -90,7 +98,9 @@ for dir in dirs:
                     else:
                         vt_stats.append('0')
                         vt_stats.append('0')
-
+#write data into output file
                     out_writer.writerow(stats_out+row+vt_stats)
+                    feature_writer.writerow(stats_out+row+vt_stats)
                 dns_file.close()
             out_file.close()
+feature_file.close()
