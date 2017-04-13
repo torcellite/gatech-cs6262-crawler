@@ -17,25 +17,26 @@ def verify_file(path, filename):
     filesize = os.path.getsize(file_toverify)
     v = virustotal.VirusTotal(API_KEY)
     print "Scanning file ", file_toverify
-    #time.sleep(20)
-    start_time = time.time()
-    current_time = start_time
-    #using sleep() does not always work; if a signal is caught it terminates sleep()
-    while(current_time < (float(start_time)+20)):
-        current_time = time.time()
-    if filesize < MAX_UPLOAD_SIZE:
-        report = v.scan(file_toverify)
-    else:
-        #if filesize is greater than the max upload size use the MD5 hash
-        filehash = hashlib.md5(open(file_toverify,"rb").read()).hexdigest()
-        report = v.get(filehash)
-    #wait for the report to be ready
-    report.join()
-    assert report.done == True
-    vt_report = {}
-    vt_report['total'] = report.total
-    vt_report['positives'] = report.positives
-    return vt_report
+    if os.path.isfile(file_toverify):
+        #time.sleep(20)
+        start_time = time.time()
+        current_time = start_time
+        #using sleep() does not always work; if a signal is caught it terminates sleep()
+        while(current_time < (float(start_time)+20)):
+            current_time = time.time()
+        if filesize < MAX_UPLOAD_SIZE:
+            report = v.scan(file_toverify)
+        else:
+            #if filesize is greater than the max upload size use the MD5 hash
+            filehash = hashlib.md5(open(file_toverify,"rb").read()).hexdigest()
+            report = v.get(filehash)
+        #wait for the report to be ready
+        report.join()
+        assert report.done == True
+        vt_report = {}
+        vt_report['total'] = report.total
+        vt_report['positives'] = report.positives
+        return vt_report
 
 
 def get_malicious_data(url, dns_id, path):
@@ -77,15 +78,6 @@ if __name__ == "__main__":
                     vt_verify_flag = 0
 
             if vt_verify_flag==1:
-                scan_count += 1
-                if scan_count%4 == 0:
-                    #time.sleep(30)
-                    start_time = time.time()
-                    current_time = start_time
-                    #using sleep() does not always work; if a signal is caught it terminates sleep()
-                    while(current_time < (float(start_time)+30)):
-                        current_time = time.time()
-
                 vt_report = verify_file(download_filepath, download_file)
                 if not vt_report['positives']==0:
                     get_malicious_data(url, dns_id, path)
