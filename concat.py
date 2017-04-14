@@ -1,4 +1,4 @@
-# Pyhton script to collect all the classifier features from various urls crawled on a single day 
+# Pyhton script to collect all the classifier features from various urls crawled on a single day
 # and accumulate it into one file which will be used by our classifier
 
 import csv
@@ -21,7 +21,7 @@ for base_dir in base_dirs:
 
 #create the cumulative file of features for the entire day
 feature_file = open(feature_file_name, "w")
-feature_writer = csv.writer(feature_file)
+feature_writer = csv.writer(feature_file, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
 
 #traversing through every url that was crawled on that perticular day
 for dir in dirs:
@@ -63,7 +63,7 @@ for dir in dirs:
             stat_file.close()
 #create output file
             out_file = open(dir+"/sample.csv", "w")
-            out_writer = csv.writer(out_file)
+            out_writer = csv.writer(out_file, delimiter=',', quoting=csv.QUOTE_NONNUMERIC)
 
 #writing stats+dns data into output file
             for file in dns_files:
@@ -87,18 +87,21 @@ for dir in dirs:
                 for row in dns_reader:
                     vt_stats = []
                     if vt_flag and vt_record_exists:
-                        vt_stats.append('1')
+                        vt_stats.append(1)
                         if row[0] in malicious_url_list:
-                            vt_stats.append('1')
+                            vt_stats.append(1)
                         else:
-                            vt_stats.append('0')
+                            vt_stats.append(0)
                     elif vt_record_exists:
-                        vt_stats.append('1')
-                        vt_stats.append('0')
+                        vt_stats.append(1)
+                        vt_stats.append(0)
                     else:
-                        vt_stats.append('0')
-                        vt_stats.append('0')
+                        vt_stats.append(0)
+                        vt_stats.append(0)
 #write data into output file
+                    if "NaN" in stats_out:
+                        stats_out = [s.replace("NaN", "?") for s in stats_out]
+                        print type(stats_out),  stats_out
                     out_writer.writerow(stats_out+row+vt_stats)
                     feature_writer.writerow(stats_out+row+vt_stats)
                 dns_file.close()
