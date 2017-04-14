@@ -10,13 +10,13 @@ import virustotal
 MAX_UPLOAD_SIZE = 32000000
 API_KEY = 'be2c60b986bf1cc0fbc80fe5fd2382f2a5e25384ebac14fcbd4701346749f4ca'
 
-font_file_ext = ['.woff', '.otf', '.ttf', '.jpg', '.png', '.pdf', '.js', '.json']
+file_ext = ['.woff', '.otf', '.ttf', '.jpg', '.png', '.pdf', '.js', '.json', '.PDF']
 
 def verify_file(path, filename):
     file_toverify = path + '/' + filename
     filesize = os.path.getsize(file_toverify)
     v = virustotal.VirusTotal(API_KEY)
-    if not os.path.isdir(file_toverify) and filesize > 10000:
+    if not os.path.isdir(file_toverify) and filesize > 10000 and '?' not in file_toverify:
         print "Scanning file ", file_toverify
         #time.sleep(20)
         start_time = time.time()
@@ -77,7 +77,7 @@ def get_vt_details(tmp_filelist):
 
             vt_verify_flag = 1
             #Do not scan the file if it is a font file
-            for ext in font_file_ext:
+            for ext in file_ext:
                 if ext in download_file:
                     vt_verify_flag = 0
 
