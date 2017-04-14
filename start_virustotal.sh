@@ -2,10 +2,14 @@
 
 # $1 - date as an input
 
-find crawled_websites/$1 -type f -name "tmp_dumpurl_*" -print0 |
-  while IFS= read -r -d $'\0' line; do
+python vt_prepare_list.py $1
+
+VT_LIST="crawled_websites/$1/vt_list"
+echo $VT_LIST
+
+while IFS=$'' read -r line; do
     echo $line
     python virustotal_verify.py $line
-  done
+done < "$VT_LIST"
 
 python concat.py $1

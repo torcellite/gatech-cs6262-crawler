@@ -10,7 +10,7 @@ import virustotal
 MAX_UPLOAD_SIZE = 32000000
 API_KEY = 'be2c60b986bf1cc0fbc80fe5fd2382f2a5e25384ebac14fcbd4701346749f4ca'
 
-font_file_ext = ['.woff', '.otf', '.ttf']
+font_file_ext = ['.woff', '.otf', '.ttf', '.jpg', '.png', '.pdf', '.js', '.json']
 
 def verify_file(path, filename):
     file_toverify = path + '/' + filename
@@ -22,7 +22,7 @@ def verify_file(path, filename):
         start_time = time.time()
         current_time = start_time
         #using sleep() does not always work; if a signal is caught it terminates sleep()
-        while(current_time < (float(start_time)+20)):
+        while(current_time < (float(start_time)+16)):
             current_time = time.time()
         try:
             if filesize < MAX_UPLOAD_SIZE:
@@ -65,47 +65,35 @@ def get_malicious_data(url, dns_id, path):
 
 def get_vt_details(tmp_filelist):
     #filename = sys.argv[1]
-    for filename in tmp_filelist:
-        with open(filename, 'r+') as tmp_file:
-            for line in tmp_file:
-                #line = tmp_file.readline()
-                l = line.split(' ')
-                dns_id = l[0]
-                url = l[1]
-                path = l[2]
-                download_filepath = l[3]
-                download_file = l[4].strip('\n')
+    with open(filename, 'r+') as tmp_file:
+        for line in tmp_file:
+            #line = tmp_file.readline()
+            l = line.split(' ')
+            dns_id = l[0]
+            url = l[1]
+            path = l[2]
+            download_filepath = l[3]
+            download_file = l[4].strip('\n')
 
-                vt_verify_flag = 1
-                #Do not scan the file if it is a font file
-                for ext in font_file_ext:
-                    if ext in download_file:
-                        vt_verify_flag = 0
+            vt_verify_flag = 1
+            #Do not scan the file if it is a font file
+            for ext in font_file_ext:
+                if ext in download_file:
+                    vt_verify_flag = 0
 
-                if vt_verify_flag==1:
-                    vt_report = verify_file(download_filepath, download_file)
-                    if vt_report and not vt_report['positives']==0:
-                        get_malicious_data(url, dns_id, path)
-                        #final virus total result
-                        record = str(vt_report['positives']) + '/' + str(vt_report['total']) +'\n'
-                        #file containing VT result if found malicious
-                        vt_filepath = path + '/virus_total_' + dns_id + "_" + download_file.rsplit('.', 1)[0]
-                        with open(vt_filepath, 'w+b') as vt_file:
-                            vt_file.write(record)
-                        vt_file.close()
+            if vt_verify_flag==1:
+                vt_report = verify_file(download_filepath, download_file)
+                if vt_report and not vt_report['positives']==0:
+                    get_malicious_data(url, dns_id, path)
+                    #final virus total result
+                    record = str(vt_report['positives']) + '/' + str(vt_report['total']) +'\n'
+                    #file containing VT result if found malicious
+                    vt_filepath = path + '/virus_total_' + dns_id + "_" + download_file.rsplit('.', 1)[0]
+                    with open(vt_filepath, 'w+b') as vt_file:
+                        vt_file.write(record)
+                    vt_file.close()
 
 
 if __name__ == "__main__":
-    date = sys.argv[1]
-    tmp_filelist = []
-    crawl_lists_path = "crawled_websites/" + date + "/crawl_lists"
-    for weblist_dir in os.listdir(crawl_lists_path):
-        weblist_path = os.path.join(crawl_lists_path, weblist_dir)
-        for site_dir in os.listdir(weblist_path):
-            site_path = os.path.join(weblist_path, site_dir)
-            root, dirs, files = next(os.walk(site_path))
-            for f in files:
-                if "tmp_dumpurl_" in f:
-                    tmp_file_path = os.path.join(site_path, f)
-                    tmp_filelist.append(tmp_file_path)
-    get_vt_details(tmp_filelist)
+    filename = sys.argv[1]
+    get_vt_details(filename)
