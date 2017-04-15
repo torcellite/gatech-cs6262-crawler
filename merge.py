@@ -4,6 +4,8 @@ import csv
 import os
 import sys
 
+csv.field_size_limit(sys.maxsize)
+
 rank_dict = {}
 
 feature_file_name = "../classifier_features/" + sys.argv[1] + "_features.csv"
@@ -100,39 +102,42 @@ def merge_data(filepath):
                     next(dns_reader)
                 except:
                     pass
-                for row in dns_reader:
-                    vt_stats = []
-                    if vt_flag and vt_record_exists:
-                        vt_stats.append(1)
-                        if row[0] in malicious_url_list:
+                try:
+                    for row in dns_reader:
+                        vt_stats = []
+                        if vt_flag and vt_record_exists:
                             vt_stats.append(1)
+                            if row[0] in malicious_url_list:
+                                vt_stats.append(1)
+                            else:
+                                vt_stats.append(0)
+                        elif vt_record_exists:
+                            vt_stats.append(1)
+                            vt_stats.append(0)
                         else:
                             vt_stats.append(0)
-                    elif vt_record_exists:
-                        vt_stats.append(1)
-                        vt_stats.append(0)
-                    else:
-                        vt_stats.append(0)
-                        vt_stats.append(0)
-                    #write data into output file
-                    try:
-                        row[0] = '\"' + row[0] + '\"'
-                        row[1] = '\"' + row[1] + '\"'
-                        row[3] = '\"' + row[3] + '\"'
-                    except:
-                        pass
-                    try:
-                        if row[5] is not '?':
-                            row[5] = '\"' + row[5] + '\"'
-                        if row[6] is not '?':
-                            row[6] = '\"' + row[6] + '\"'
-                    except:
-                        pass
-                    try:
-                        sample_file_writer.writerow(stats_out+row+rank+vt_stats)
-                        feature_writer.writerow(stats_out+row+rank+vt_stats)
-                    except:
-                        pass
+                            vt_stats.append(0)
+                        #write data into output file
+                        try:
+                            row[0] = '\"' + row[0] + '\"'
+                            row[1] = '\"' + row[1] + '\"'
+                            row[3] = '\"' + row[3] + '\"'
+                        except:
+                            pass
+                        try:
+                            if row[5] is not '?':
+                                row[5] = '\"' + row[5] + '\"'
+                            if row[6] is not '?':
+                                row[6] = '\"' + row[6] + '\"'
+                        except:
+                            pass
+                        try:
+                            sample_file_writer.writerow(stats_out+row+rank+vt_stats)
+                            feature_writer.writerow(stats_out+row+rank+vt_stats)
+                        except:
+                            pass
+                except:
+                    pass
             dns_file.close()
     sample_file.close()
     feature_file.close()
