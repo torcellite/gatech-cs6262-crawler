@@ -96,7 +96,10 @@ def merge_data(filepath):
 
             with open(dnsfile, "r") as dns_file:
                 dns_reader = csv.reader(dns_file)
-                next(dns_reader)
+                try:
+                    next(dns_reader)
+                except:
+                    pass
                 for row in dns_reader:
                     vt_stats = []
                     if vt_flag and vt_record_exists:
@@ -125,8 +128,11 @@ def merge_data(filepath):
                             row[6] = '\"' + row[6] + '\"'
                     except:
                         pass
-                    sample_file_writer.writerow(stats_out+row+rank+vt_stats)
-                    feature_writer.writerow(stats_out+row+rank+vt_stats)
+                    try:
+                        sample_file_writer.writerow(stats_out+row+rank+vt_stats)
+                        feature_writer.writerow(stats_out+row+rank+vt_stats)
+                    except:
+                        pass
             dns_file.close()
     sample_file.close()
     feature_file.close()
