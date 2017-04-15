@@ -12,4 +12,4 @@ while IFS=$'' read -r line; do
     python virustotal_verify.py $line
 done < "$VT_LIST"
 
-python concat.py $1
+python merge.py $1
