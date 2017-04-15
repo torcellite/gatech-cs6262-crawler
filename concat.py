@@ -18,7 +18,7 @@ for base_dir in base_dirs:
     web_dirs = next(os.walk(dir_path+base_dir))[1]
     for dir in web_dirs:
         dirs.append(dir_path+base_dir+"/"+dir)
-
+    print dirs
 #create the cumulative file of features for the entire day
 feature_file = open(feature_file_name, "w")
 feature_writer = csv.writer(feature_file, delimiter=',', quotechar='\'', quoting=csv.QUOTE_MINIMAL)
@@ -60,6 +60,8 @@ for dir in dirs:
             stat_file = open(dir+"/stats.csv")
             stats_reader = csv.reader(stat_file)
             stats_out = stats_reader.next()
+            if "NaN" in stats_out:
+                stats_out = [s.replace("NaN", "?") for s in stats_out]
             stat_file.close()
 #create output file
             out_file = open(dir+"/sample.csv", "w")
@@ -84,6 +86,7 @@ for dir in dirs:
                 dns_file = open(dir+"/"+file)
                 dns_reader = csv.reader(dns_file)
                 ignore = dns_reader.next()
+
                 for row in dns_reader:
                     vt_stats = []
                     if vt_flag and vt_record_exists:
@@ -99,21 +102,22 @@ for dir in dirs:
                         vt_stats.append(0)
                         vt_stats.append(0)
 #write data into output file
-                    if "NaN" in stats_out:
-                        stats_out = [s.replace("NaN", "?") for s in stats_out]
-                        #print type(stats_out),  stats_out
-                        #url,ip_address,asn,asn_country_code,soa_serial,soa_mname,soa_rname,soa_refresh,soa_retry,soa_expire,soa_minimum
-                        #http://google.com/,64.233.177.102,15169,US,151226368,ns1.google.com.,dns-admin.google.com.,900,900,1800,60
-                    row[0] = '\"' + row[0] + '\"'
-                    row[1] = '\"' + row[1] + '\"'
-                    row[3] = '\"' + row[3] + '\"'
-                    if row[5] is not '?':
-                        row[5] = '\"' + row[5] + '\"'
-                    if row[6] is not '?':
-                        row[6] = '\"' + row[6] + '\"'
+                    try:
+                        row[0] = '\"' + row[0] + '\"'
+                        row[1] = '\"' + row[1] + '\"'
+                        row[3] = '\"' + row[3] + '\"'
+                    except:
+                        pass
+                    try:
+                        if row[5] is not '?':
+                            row[5] = '\"' + row[5] + '\"'
+                        if row[6] is not '?':
+                            row[6] = '\"' + row[6] + '\"'
+                    except:
+                        pass
 
-                    out_writer.writerow(stats_out+row+vt_stats)
-                    feature_writer.writerow(stats_out+row+vt_stats)
+                    out_writer.writerow(stats_out+row+[rank]+vt_stats)
+                    feature_writer.writerow(stats_out+row+[rank]+vt_stats)
                 dns_file.close()
             out_file.close()
 feature_file.close()
