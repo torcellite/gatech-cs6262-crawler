@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+##
+#Script to save the downloaded file name, path and url into a file tmp_dumpurl_*;
+#will be used to scan files with VT
+##
+
 import os
 import sys
 

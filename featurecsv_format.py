@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+##
+#Script to sanitize the feature csv file for the ML classifier
+##
+
 import os
 import sys
 import csv

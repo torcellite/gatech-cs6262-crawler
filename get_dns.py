@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+##
+#Script to collect all dns information based on the resources requested by the site
+##
+
 import os
 import sys
 import re
@@ -21,8 +25,8 @@ contentTypeWhitelist = ['application/json',
 
 urls_visited = []
 
+#Resolve DNS request
 def resolveDns(url):
-    #print "Resolving domain for url: ", url
     dns_record = {}
     if url.startswith('http'):
         dns_record['url'] = url
@@ -30,15 +34,13 @@ def resolveDns(url):
         if domain_name:
             resolver = dns.resolver.Resolver()
             try:
+                #fetch dns A-record
                 dns_ans = resolver.query(domain_name, 'A')
                 #Store DNS record only for the first IP address to avoid redundant data
                 r = dns_ans[0]
                 if str(r) in urls_visited:
                     return None
                 else:
-                    #obj = IPWhois(str(r))
-                    #results = obj.lookup_rdap(depth=1)
-                    #for collecting only the ASN records
                     net = Net(r)
                     obj = IPASN(net)
                     results = obj.lookup()
@@ -47,6 +49,7 @@ def resolveDns(url):
                     dns_record['asn'] = results['asn']
                     dns_record['asn_country_code'] = results['asn_country_code']
             except:
+                #if A-record is not found mark it as unknown '?'
                 dns_record['ip_address'] = '?'
                 dns_record['asn'] = '?'
                 dns_record['asn_country_code'] = '?'
@@ -62,6 +65,7 @@ def resolveDns(url):
                     dns_record['soa_expire'] = s.expire
                     dns_record['soa_minimum'] = s.minimum
             except:
+                #extract the domain name and try fetching the SOA record
                 ext = tldextract.extract(url)
                 domain = ext.domain + '.' + ext.suffix
                 try:
@@ -86,11 +90,10 @@ def resolveDns(url):
     else:
         return None
 
-
+#fetch resorces requested by the crawler and sump the ns records  into a file
 def get_resource(path):
     dnsrecord_id = path.split('/')[-2]
     res_file = path + 'resources.json'
-    #dnscsv_file = path + 'dns_record.csv'
     dnscsv_file = path +'/../' + 'dns_record_' + dnsrecord_id.split('_')[-1] + '.csv'
     with open(res_file) as resource_file, open(dnscsv_file, 'wb') as csvfile:
         fieldnames = ['url', 'ip_address', 'asn', 'asn_country_code',

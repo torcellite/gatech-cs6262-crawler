@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+##
+#Script to merge all the data (stats from the crawler, dns record, VT, alexa rank)
+#into a single file on a per day basis
+##
+
 import csv
 import os
 import sys
@@ -10,6 +15,7 @@ rank_dict = {}
 
 feature_file_name = "../classifier_features/" + sys.argv[1] + "_features.csv"
 
+#traverse through the alexa list of the given date and put it into a dictionary for getting the rank
 def traverse_rankfile(date):
     rank_file_name = date + "-top-1m-urls.csv"
     rank_file_path = os.path.join('../alexa-processor/csv/', rank_file_name)
@@ -20,7 +26,7 @@ def traverse_rankfile(date):
             rank_dict[line[1]] = line[0]
     rank_file.close()
 
-
+#retrieve alexa rank for a given url
 def get_rank(filepath):
     url = filepath.split('/')[-1]
     if url in rank_dict.keys():
@@ -28,7 +34,7 @@ def get_rank(filepath):
     else:
         return None
 
-
+#collect crawler statistics for a given url
 def get_stats_data(filepath):
     stats_file_path = os.path.join(filepath, "stats.csv")
     if os.path.isfile(stats_file_path):
@@ -42,7 +48,7 @@ def get_stats_data(filepath):
     else:
         return None
 
-
+#fetch all dns record files (including all pop ups) for a particular url
 def get_dnsfiles(filepath):
     dns_files_list = []
     root, dirs, files = next(os.walk(filepath))
@@ -52,7 +58,7 @@ def get_dnsfiles(filepath):
             dns_files_list.append(dns_file_path)
     return dns_files_list
 
-
+#check for virus total record; if present means the url triggered some malicious download
 def get_vt_record(filepath):
     vt_record_list = []
     root, dirs, files = next(os.walk(filepath))
@@ -63,15 +69,16 @@ def get_vt_record(filepath):
             vt_record_list.append(id)
     return vt_record_list
 
-
+#fetch the dns records for all related url and merge all data together into a single feature file
 def merge_data(filepath):
     sample_file_path = os.path.join(filepath, "sample.csv")
     with open(feature_file_name, "a+") as feature_file, open(sample_file_path, "w") as sample_file:
         feature_writer = csv.writer(feature_file, delimiter=',', quotechar='\'', quoting=csv.QUOTE_MINIMAL)
         sample_file_writer = csv.writer(sample_file, delimiter=',', quotechar='\'', quoting=csv.QUOTE_MINIMAL)
+        #get crawler statistics
         stats_out = get_stats_data(site_path)
+        #get VT record if present
         rank = [get_rank(site_path)]
-        #rank = ['?']
 
         dns_files_list = get_dnsfiles(filepath)
         vt_records = get_vt_record(filepath)
@@ -82,7 +89,6 @@ def merge_data(filepath):
 
         for dnsfile in dns_files_list:
             vt_flag = False
-            #check VT records and collect the malicious URLs
             malicious_url_list = []
             count = 0
             for id in vt_records:
@@ -105,6 +111,7 @@ def merge_data(filepath):
                 try:
                     for row in dns_reader:
                         vt_stats = []
+                        #append VT record if the url was found to be malicious
                         if vt_flag and vt_record_exists:
                             vt_stats.append(1)
                             if row[0] in malicious_url_list:
@@ -117,7 +124,6 @@ def merge_data(filepath):
                         else:
                             vt_stats.append(0)
                             vt_stats.append(0)
-                        #write data into output file
                         try:
                             row[0] = '\"' + row[0] + '\"'
                             row[1] = '\"' + row[1] + '\"'
@@ -132,6 +138,7 @@ def merge_data(filepath):
                         except:
                             pass
                         try:
+                            #write data into output file
                             sample_file_writer.writerow(stats_out+row+rank+vt_stats)
                             feature_writer.writerow(stats_out+row+rank+vt_stats)
                         except:

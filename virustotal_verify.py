@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+##
+#Python script to check if the downloaded binary/file is malicious or not
+#using Virus total public API
+##
+
 import os
 import sys
 import time
@@ -10,6 +15,7 @@ import virustotal
 MAX_UPLOAD_SIZE = 32000000
 API_KEY = 'be2c60b986bf1cc0fbc80fe5fd2382f2a5e25384ebac14fcbd4701346749f4ca'
 
+#Do not scan the folowing files
 file_ext = ['.woff', '.otf', '.ttf', '.jpg', '.png', '.pdf', '.js', '.json', '.PDF']
 
 def verify_file(path, filename):
@@ -18,7 +24,6 @@ def verify_file(path, filename):
     v = virustotal.VirusTotal(API_KEY)
     if not os.path.isdir(file_toverify) and filesize > 10000 and '?' not in file_toverify:
         print "Scanning file ", file_toverify
-        #time.sleep(20)
         start_time = time.time()
         current_time = start_time
         #using sleep() does not always work; if a signal is caught it terminates sleep()
@@ -64,10 +69,8 @@ def get_malicious_data(url, dns_id, path):
 
 
 def get_vt_details(tmp_filelist):
-    #filename = sys.argv[1]
     with open(filename, 'r+') as tmp_file:
         for line in tmp_file:
-            #line = tmp_file.readline()
             l = line.split(' ')
             dns_id = l[0]
             url = l[1]
@@ -76,7 +79,7 @@ def get_vt_details(tmp_filelist):
             download_file = l[4].strip('\n')
 
             vt_verify_flag = 1
-            #Do not scan the file if it is a font file
+            #Do not scan the file if it is a font file, image, js or pdf
             for ext in file_ext:
                 if ext in download_file:
                     vt_verify_flag = 0
@@ -87,7 +90,7 @@ def get_vt_details(tmp_filelist):
                     get_malicious_data(url, dns_id, path)
                     #final virus total result
                     record = str(vt_report['positives']) + '/' + str(vt_report['total']) +'\n'
-                    #file containing VT result if found malicious
+                    #writing VT result to a file if found malicious
                     vt_filepath = path + '/virus_total_' + dns_id + "_" + download_file.rsplit('.', 1)[0]
                     with open(vt_filepath, 'w+b') as vt_file:
                         vt_file.write(record)

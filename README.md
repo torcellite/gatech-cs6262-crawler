@@ -26,3 +26,7 @@ To spawn multiple crawler instances to crawl multiple files like "website_list"
 `bash run_multiple_crawler.sh 8`
 
 The file name convention for the lists is "website_list_[num]" where [num] varies from 1 to the number of instances.
+
+To start verifying all the downloaded files with VT for a given date and merge all the data into a single file.
+
+`bash start_virustotal.sh 04-04-17`

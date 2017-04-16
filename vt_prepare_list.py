@@ -1,5 +1,10 @@
 #!/usr/bin/python
 
+##
+#Helper script to prepare a list of binaries to be scanned with Virus total
+#path is : crawled_websites/<date>/crawl_lists/website_list_<pid>/<url>
+##
+
 import os
 import sys
 import time
