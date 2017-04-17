@@ -1,0 +1,6 @@
+ipwhois==0.15.1
+tldextract==2.0.2
+virustotal==1.0.3
+dnspython==1.15.0
+ipaddr
+hashlib
