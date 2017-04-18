@@ -10,7 +10,7 @@ The module crawls the given list of domains. It tries to elicit drive-by downloa
   1. [PhantomJS](http://phantomjs.org/download.html)
   2. Python 2.7
 
-Install all the python libraries using `pip install requirements.txt`
+Install all the python libraries using `pip -r install requirements.txt`
 
 ### Usage
 To crawl one domain like google.com:
